@@ -10,7 +10,7 @@ function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  async function handleSubmit(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     try {
       const response = await fetch(`${BASE_URL}/api/login`, {
@@ -22,18 +22,14 @@ function Login() {
       });
       const data = await response.json();
 
-      if (response.ok) {
-        console.log("ログイン成功:", data);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/dashboard");
-      } else {
-        console.error(data.message);
-        setError("エラーが発生しました");
+      if (!response.ok) {
+        throw new Error("ログインに失敗しました");
       }
-    } catch (error) {
-      console.error("エラー", error);
-      setError("エラーが発生しました");
+
+      localStorage.setItem("token", data.token);
+      navigate("/dashboard");
+    } catch (err) {
+      setError("エラーが発生しました: " + err.message);
     }
   }
 
@@ -41,7 +37,7 @@ function Login() {
     <div className="login-container">
       <h2>ログイン</h2>
       {error && <div className="error">{error}</div>}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <div className="input-group">
           <input
             type="email"
@@ -70,5 +66,4 @@ function Login() {
     </div>
   );
 }
-
 export default Login;
