@@ -1,34 +1,53 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+const BASE_URL = "http://localhost:3000";
 
-function Dashboard() {
-  const [token, setToken] = useState("");
-  const [user, setUser] = useState(null);
+const Dashboard = () => {
+  const [userInfo, setUserInfo] = useState({
+    id: "",
+    email: "",
+    password: "",
+    created_at: "",
+  });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (storedToken) {
-      setToken(storedToken);
+    async function fetchUserInfo() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("トークンが見つかりませんでした。");
+        return;
+      } else {
+        try {
+          const response = await fetch(`${BASE_URL}/api/users`, {
+            metohod: "GET",
+            headers: {
+              authorization: token,
+            },
+          });
+          const json = await response.json();
+          setUserInfo(json);
+        } catch (err) {
+          setError("ユーザー情報の取得に失敗しました.");
+          console.error(err);
+        }
+      }
     }
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    fetchUserInfo();
   }, []);
+
   return (
-    <div className="token-container">
-      <h1>ユーザー情報</h1>
-      {user && (
-        <div>
-          <p>ID: {user.id}</p>
-          <p>Email: {user.email}</p>
-          <p>Password: {user.password}</p>
-          <p>Created At: {user.created_at}</p>
-        </div>
-      )}
-      {token && <p className="token-text">Token: {token}</p>}
-    </div>
+    <form>
+      <p>ID:{userInfo.id}</p>
+      <p>email:{userInfo.email}</p>
+      <p>password:{userInfo.password}</p>
+      <p>created_at:{userInfo.created_at}</p>
+      <div className="button-container">
+        <button onClick={() => navigate("/")}>ログイン画面へ</button>
+      </div>
+    </form>
   );
-}
+};
 
 export default Dashboard;

@@ -7,12 +7,11 @@ const BASE_URL = "http://localhost:3000";
 function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   async function handleSignup(e) {
     e.preventDefault();
-
     try {
       const response = await fetch(`${BASE_URL}/api/signup`, {
         method: "POST",
@@ -23,18 +22,17 @@ function Signup() {
       });
       const data = await response.json();
 
-      if (response.ok) {
-        console.log("サインアップ成功:", data);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/dashboard");
-      } else {
-        console.error(data.message);
-        setError("エラーが発生しました");
+      console.log("if文前", data);
+
+      if (!response.ok) {
+        console.log("if文内", data);
+        throw new Error("サインアップに失敗しました");
       }
-    } catch (error) {
-      console.error("エラー", error);
-      setError("エラーが発生しました");
+      localStorage.setItem("token", data.token);
+      navigate("/dashboard");
+    } catch (err) {
+      console.log(err);
+      setError("エラーが発生しました: " + err.message);
     }
   }
 
